@@ -4,34 +4,48 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Raccoon Quant Citadel</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Load everything as plain scripts — works from any local file or content:// URL -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/lucide-react/dist/umd/lucide-react.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #020617; overflow: hidden; }
-    @keyframes spin    { to { transform: rotate(360deg); } }
-    @keyframes unspin  { to { transform: rotate(-360deg); } }
-    @keyframes pulse   { 0%,100% { opacity:.85; transform:scale(1); } 50% { opacity:1; transform:scale(1.08); } }
-    @keyframes blink   { 0%,100% { opacity:.4; } 50% { opacity:.7; } }
-    @keyframes slidein { from { transform:translateX(340px); opacity:0; } to { transform:translateX(0); opacity:1; } }
-    @keyframes fadein  { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
-    .spin18  { animation: spin   18s linear infinite; }
-    .spin6   { animation: spin    6s linear infinite; }
-    .unspin9 { animation: unspin  9s linear infinite; }
-    .pulse35 { animation: pulse 3.5s ease-in-out infinite; }
-    .blink2  { animation: blink   2s ease-in-out infinite; }
-    .slidein { animation: slidein .35s cubic-bezier(.22,.68,0,1.2) forwards; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #020617; }
+    #root { width: 100%; height: 100%; }
+
+    @keyframes spin    { to   { transform: rotate(360deg);  } }
+    @keyframes unspin  { to   { transform: rotate(-360deg); } }
+    @keyframes pulse35 { 0%,100% { opacity:.85; transform:translate(-50%,-50%) scale(1);    }
+                         50%      { opacity:1;   transform:translate(-50%,-50%) scale(1.08); } }
+    @keyframes blink   { 0%,100% { opacity:.4; } 50% { opacity:.75; } }
+    @keyframes slidein { from { transform:translateX(340px); opacity:0; }
+                         to   { transform:translateX(0);     opacity:1; } }
+    @keyframes fadein  { from { opacity:0; transform:translateX(10px); }
+                         to   { opacity:1; transform:translateX(0);    } }
+    @keyframes dotblink{ 0%,100%{opacity:.5;} 50%{opacity:1;} }
+
+    .spin18  { animation: spin    18s linear     infinite; }
+    .spin6   { animation: spin     6s linear     infinite; }
+    .unspin9 { animation: unspin   9s linear     infinite; }
+    .blink-orb { animation: blink  2s ease-in-out infinite; }
+    .blink-creature { animation: blink 2s ease-in-out infinite; }
+    .dot-pulse  { animation: dotblink 1.5s ease-in-out infinite; }
+    .panel-slide { animation: slidein .35s cubic-bezier(.22,.68,0,1.2) forwards; }
   </style>
 </head>
 <body>
   <div id="root"></div>
 
-  <script type="text/babel" data-type="module">
-    import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.3.1';
-    import { createRoot } from 'https://esm.sh/react-dom@18.3.1/client';
-    import { Trophy, Scale, Shield, AlertTriangle, BookOpen, Lock, Eye, Leaf,
-             X, ChevronRight, Activity, TrendingUp, Zap, Archive }
-      from 'https://esm.sh/lucide-react@0.400.0';
+  <script type="text/babel">
+    /* globals React, ReactDOM, LucideReact */
+    const { useState, useEffect, useRef } = React;
+    const {
+      Trophy, Scale, Shield, AlertTriangle, BookOpen, Lock, Eye, Leaf,
+      X, ChevronRight, Activity, TrendingUp, Zap, Archive
+    } = LucideReact;
 
     // ── Sample Data ──────────────────────────────────────────────────────────
 
@@ -39,10 +53,10 @@
       champion_gate: {
         title: "Champion Gate", subtitle: "Promotion Eligibility Council",
         stats: [
-          { label: "Candidates Today",    value: "3"    },
-          { label: "Promoted This Week",  value: "1"    },
-          { label: "Collision Blocks",    value: "2"    },
-          { label: "Gate Threshold",      value: "0.72" },
+          { label: "Candidates Today",   value: "3"    },
+          { label: "Promoted This Week", value: "1"    },
+          { label: "Collision Blocks",   value: "2"    },
+          { label: "Gate Threshold",     value: "0.72" },
         ],
         log: [
           "[DAY 47] Bold_Cautious_v2 — PROMOTED to CHAMPION",
@@ -51,7 +65,7 @@
           "[DAY 43] Stone_Raccoon — INELIGIBLE: inertness threshold reached",
           "[DAY 40] Chaos_Snack — TRIAL extended: insufficient clean streak",
         ],
-        glow: "#f59e0b", border: "#f59e0b44", textColor: "#fbbf24", bg: "rgba(245,158,11,.08)",
+        glow:"#f59e0b", textColor:"#fbbf24", bg:"rgba(245,158,11,.08)",
       },
       collision_court: {
         title: "Collision Court", subtitle: "Strategy Overlap Diagnostics",
@@ -68,15 +82,15 @@
           "[DAY 45] Stone_Raccoon × Careful_Garden — similarity 0.39 — CLEAR",
           "[DAY 44] Bold_Cautious_v2 × Careful_Garden — similarity 0.52 — WATCH",
         ],
-        glow: "#8b5cf6", border: "#8b5cf644", textColor: "#a78bfa", bg: "rgba(139,92,246,.08)",
+        glow:"#8b5cf6", textColor:"#a78bfa", bg:"rgba(139,92,246,.08)",
       },
       door_guard: {
         title: "Door Guard", subtitle: "Audit vs Live Mode Sentinel",
         stats: [
-          { label: "Mode",           value: "AUDIT" },
-          { label: "Signals Screened", value: "219" },
-          { label: "Live Blocks",    value: "0"     },
-          { label: "Lookahead Flags", value: "7"    },
+          { label: "Mode",              value: "AUDIT" },
+          { label: "Signals Screened",  value: "219"   },
+          { label: "Live Blocks",       value: "0"     },
+          { label: "Lookahead Flags",   value: "7"     },
         ],
         log: [
           "[DAY 47] AUDIT — next-bar data permitted for Bold_Cautious_v2",
@@ -85,15 +99,15 @@
           "[DAY 45] LIVE check — Chaos_Snack: signal valid, no lookahead detected",
           "[DAY 44] Mode: switched to AUDIT for backtest session #14",
         ],
-        glow: "#06b6d4", border: "#06b6d444", textColor: "#22d3ee", bg: "rgba(6,182,212,.08)",
+        glow:"#06b6d4", textColor:"#22d3ee", bg:"rgba(6,182,212,.08)",
       },
       risk_governor: {
         title: "Risk Governor", subtitle: "Exposure Caps & Authority Limits",
         stats: [
-          { label: "Max Authority",   value: "0.85" },
-          { label: "Overrides Today", value: "0"    },
-          { label: "Capped Entries",  value: "3"    },
-          { label: "Risk Score Avg",  value: "0.44" },
+          { label: "Max Authority",    value: "0.85" },
+          { label: "Overrides Today",  value: "0"    },
+          { label: "Capped Entries",   value: "3"    },
+          { label: "Risk Score Avg",   value: "0.44" },
         ],
         log: [
           "[DAY 47] Bold_Cautious_v2 — authority 0.82 — WITHIN CAP",
@@ -102,15 +116,15 @@
           "[DAY 45] Stone_Raccoon — authority 0.41 — WITHIN CAP",
           "[DAY 44] Careful_Garden — authority 0.78 — WITHIN CAP",
         ],
-        glow: "#f97316", border: "#f9731644", textColor: "#fb923c", bg: "rgba(249,115,22,.08)",
+        glow:"#f97316", textColor:"#fb923c", bg:"rgba(249,115,22,.08)",
       },
       wisdom_archive: {
         title: "Wisdom Archive", subtitle: "Scored Memory Ledger",
         stats: [
-          { label: "Total Memories",   value: "847"  },
-          { label: "Active",           value: "312"  },
-          { label: "Quarantined",      value: "41"   },
-          { label: "Avg Wisdom Score", value: "0.63" },
+          { label: "Total Memories",    value: "847"  },
+          { label: "Active",            value: "312"  },
+          { label: "Quarantined",       value: "41"   },
+          { label: "Avg Wisdom Score",  value: "0.63" },
         ],
         log: [
           "[DAY 47] Memory #0412 — score 0.79 — ACTIVE — Bold_Cautious_v2",
@@ -119,15 +133,15 @@
           "[DAY 46] Memory #0377 — score 0.68 — ACTIVE — Careful_Garden",
           "[DAY 45] Memory #0349 — score 0.21 — PROBATION — staleness 0.88",
         ],
-        glow: "#10b981", border: "#10b98144", textColor: "#34d399", bg: "rgba(16,185,129,.08)",
+        glow:"#10b981", textColor:"#34d399", bg:"rgba(16,185,129,.08)",
       },
       quarantine_wing: {
         title: "Quarantine Wing", subtitle: "Isolation & Rehabilitation",
         stats: [
-          { label: "Quarantined",     value: "41"  },
-          { label: "In Rehab Trial",  value: "8"   },
+          { label: "Quarantined",      value: "41"  },
+          { label: "In Rehab Trial",   value: "8"   },
           { label: "Clean Streak Avg", value: "1.4" },
-          { label: "Released Today",  value: "2"   },
+          { label: "Released Today",   value: "2"   },
         ],
         log: [
           "[DAY 47] Memory #0388 — entered QUARANTINE — contamination 0.71",
@@ -136,15 +150,15 @@
           "[DAY 46] Memory #0355 — REHAB_TRIAL day 1 — contamination 0.28",
           "[DAY 45] Memory #0302 — released from quarantine — contamination clear",
         ],
-        glow: "#f43f5e", border: "#f43f5e44", textColor: "#fb7185", bg: "rgba(244,63,94,.08)",
+        glow:"#f43f5e", textColor:"#fb7185", bg:"rgba(244,63,94,.08)",
       },
       observatory: {
         title: "Market Weather Observatory", subtitle: "Two-Axis Weather Classification",
         stats: [
-          { label: "Current Weather", value: "LOUD_VIOLENT" },
-          { label: "Session Streak",  value: "3 days"       },
-          { label: "Calm Windows",    value: "12"           },
-          { label: "Storm Events",    value: "4"            },
+          { label: "Current Weather",  value: "LOUD_VIOLENT" },
+          { label: "Session Streak",   value: "3 days"       },
+          { label: "Calm Windows",     value: "12"           },
+          { label: "Storm Events",     value: "4"            },
         ],
         log: [
           "[DAY 47] LOUD_VOLUME × VIOLENT_PRICE → LOUD_VIOLENT — storm active",
@@ -153,14 +167,14 @@
           "[DAY 44] LOUD_VOLUME × CALM_PRICE → LOUD_CALM — volume spike, no follow",
           "[DAY 43] CALM_VOLUME × CALM_PRICE → CALM_CALM — baseline session",
         ],
-        glow: "#0ea5e9", border: "#0ea5e944", textColor: "#38bdf8", bg: "rgba(14,165,233,.08)",
+        glow:"#0ea5e9", textColor:"#38bdf8", bg:"rgba(14,165,233,.08)",
       },
       strategy_nursery: {
         title: "Strategy Nursery", subtitle: "Creature Onboarding & Lane Assignment",
         stats: [
-          { label: "Nursery Residents", value: "2"       },
-          { label: "Graduated Today",   value: "1"       },
-          { label: "Lane Conflicts",    value: "0"       },
+          { label: "Nursery Residents", value: "2"        },
+          { label: "Graduated Today",   value: "1"        },
+          { label: "Lane Conflicts",    value: "0"        },
           { label: "Avg Incubation",    value: "6.2 days" },
         ],
         log: [
@@ -170,32 +184,32 @@
           "[DAY 45] Ghost_Riser_v1 — lane assignment: storm_false_followthrough",
           "[DAY 44] Drift_Ember — entered nursery — lane: loud_calm_continuation",
         ],
-        glow: "#84cc16", border: "#84cc1644", textColor: "#a3e635", bg: "rgba(132,204,22,.08)",
+        glow:"#84cc16", textColor:"#a3e635", bg:"rgba(132,204,22,.08)",
       },
     };
 
     const ROOMS = [
-      { id: "champion_gate",    label: "Champion Gate",    Icon: Trophy,         x: 50, y: 9,  glow:"#f59e0b", text:"#fbbf24" },
-      { id: "collision_court",  label: "Collision Court",  Icon: Scale,          x: 14, y: 26, glow:"#8b5cf6", text:"#a78bfa" },
-      { id: "door_guard",       label: "Door Guard",       Icon: Shield,         x: 86, y: 26, glow:"#06b6d4", text:"#22d3ee" },
-      { id: "risk_governor",    label: "Risk Governor",    Icon: AlertTriangle,  x: 7,  y: 52, glow:"#f97316", text:"#fb923c" },
-      { id: "wisdom_archive",   label: "Wisdom Archive",   Icon: BookOpen,       x: 93, y: 52, glow:"#10b981", text:"#34d399" },
-      { id: "quarantine_wing",  label: "Quarantine Wing",  Icon: Lock,           x: 14, y: 78, glow:"#f43f5e", text:"#fb7185" },
-      { id: "observatory",      label: "Observatory",      Icon: Eye,            x: 86, y: 78, glow:"#0ea5e9", text:"#38bdf8" },
-      { id: "strategy_nursery", label: "Strategy Nursery", Icon: Leaf,           x: 50, y: 91, glow:"#84cc16", text:"#a3e635" },
+      { id:"champion_gate",    label:"Champion Gate",    Icon:Trophy,        x:50, y:9,  glow:"#f59e0b", text:"#fbbf24" },
+      { id:"collision_court",  label:"Collision Court",  Icon:Scale,         x:14, y:26, glow:"#8b5cf6", text:"#a78bfa" },
+      { id:"door_guard",       label:"Door Guard",       Icon:Shield,        x:86, y:26, glow:"#06b6d4", text:"#22d3ee" },
+      { id:"risk_governor",    label:"Risk Governor",    Icon:AlertTriangle, x:7,  y:52, glow:"#f97316", text:"#fb923c" },
+      { id:"wisdom_archive",   label:"Wisdom Archive",   Icon:BookOpen,      x:93, y:52, glow:"#10b981", text:"#34d399" },
+      { id:"quarantine_wing",  label:"Quarantine Wing",  Icon:Lock,          x:14, y:78, glow:"#f43f5e", text:"#fb7185" },
+      { id:"observatory",      label:"Observatory",      Icon:Eye,           x:86, y:78, glow:"#0ea5e9", text:"#38bdf8" },
+      { id:"strategy_nursery", label:"Strategy Nursery", Icon:Leaf,          x:50, y:91, glow:"#84cc16", text:"#a3e635" },
     ];
 
     const CREATURES = [
-      { id:"bold",    label:"Bold_Cautious_v2",    status:"CHAMPION",     color:"#f59e0b", x:38, y:38, emoji:"🦝" },
-      { id:"careful", label:"Careful_Garden",       status:"ACTIVE",       color:"#10b981", x:56, y:42, emoji:"🌱" },
-      { id:"chaos",   label:"Chaos_Snack",          status:"ACTIVE_TRIAL", color:"#8b5cf6", x:45, y:58, emoji:"⚡" },
-      { id:"stone",   label:"Stone_Raccoon",         status:"BASELINE",     color:"#64748b", x:60, y:55, emoji:"🪨" },
-      { id:"reckless",label:"Reckless_Firecracker", status:"QUARANTINED",  color:"#f43f5e", x:40, y:62, emoji:"🔒" },
+      { id:"bold",     label:"Bold_Cautious_v2",    status:"CHAMPION",     color:"#f59e0b", x:38, y:38, emoji:"🦝" },
+      { id:"careful",  label:"Careful_Garden",       status:"ACTIVE",       color:"#10b981", x:56, y:42, emoji:"🌱" },
+      { id:"chaos",    label:"Chaos_Snack",          status:"ACTIVE_TRIAL", color:"#8b5cf6", x:45, y:58, emoji:"⚡" },
+      { id:"stone",    label:"Stone_Raccoon",         status:"BASELINE",     color:"#64748b", x:60, y:55, emoji:"🪨" },
+      { id:"reckless", label:"Reckless_Firecracker", status:"QUARANTINED",  color:"#f43f5e", x:40, y:62, emoji:"🔒" },
     ];
 
     // ── Hex Glyph ─────────────────────────────────────────────────────────────
 
-    function HexGlyph({ color="#334155", size=40 }) {
+    function HexGlyph({ color, size }) {
       return (
         <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
           <polygon points="20,2 36,11 36,29 20,38 4,29 4,11"
@@ -218,38 +232,42 @@
           <div className="spin18" style={{ position:"relative", width:96, height:96 }}>
             <div style={{
               position:"absolute", inset:0, borderRadius:"50%",
-              border:"1px solid rgba(99,102,241,.4)"
+              border:"1px solid rgba(99,102,241,.4)",
             }} />
             <div className="spin6" style={{ position:"absolute", inset:8 }}>
               <div style={{
                 position:"absolute", top:0, left:"50%", transform:"translateX(-50%)",
                 width:6, height:6, borderRadius:"50%", background:"#818cf8",
-                boxShadow:"0 0 6px #818cf8"
+                boxShadow:"0 0 6px #818cf8",
               }} />
             </div>
             <div className="unspin9" style={{ position:"absolute", inset:16 }}>
               <div style={{
                 position:"absolute", top:0, left:"50%", transform:"translateX(-50%)",
                 width:4, height:4, borderRadius:"50%", background:"#a78bfa",
-                boxShadow:"0 0 4px #a78bfa"
+                boxShadow:"0 0 4px #a78bfa",
               }} />
             </div>
           </div>
-          <div className="pulse35" style={{
+
+          <div style={{
             position:"absolute", top:"50%", left:"50%",
-            transform:"translate(-50%,-50%)",
             width:40, height:40, borderRadius:"50%",
             background:"linear-gradient(135deg,#4f46e5,#7c3aed,#6d28d9)",
             boxShadow:"0 0 24px #6366f1, 0 0 8px #a78bfa",
             display:"flex", alignItems:"center", justifyContent:"center",
+            animation:"pulse35 3.5s ease-in-out infinite",
           }}>
-            <span style={{ color:"#fff", fontSize:11, fontWeight:700,
-              letterSpacing:3, fontFamily:"monospace", userSelect:"none" }}>S</span>
+            <span style={{
+              color:"#fff", fontSize:11, fontWeight:700,
+              letterSpacing:3, fontFamily:"monospace", userSelect:"none",
+            }}>S</span>
           </div>
+
           <div style={{
             position:"absolute", bottom:-22, left:"50%", transform:"translateX(-50%)",
             whiteSpace:"nowrap", fontSize:10, color:"#818cf8",
-            fontFamily:"monospace", letterSpacing:4, opacity:.7
+            fontFamily:"monospace", letterSpacing:4, opacity:.7,
           }}>SOPHON</div>
         </div>
       );
@@ -273,7 +291,7 @@
         wander();
         const id = setInterval(wander, 3000 + Math.random() * 2000);
         return () => clearInterval(id);
-      }, [creature]);
+      }, []);
 
       useEffect(() => {
         if (creature.status === "QUARANTINED") return;
@@ -286,23 +304,23 @@
         };
         frameRef.current = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(frameRef.current);
-      }, [creature.status]);
+      }, []);
 
       return (
         <div
-          className={creature.status === "QUARANTINED" ? "blink2" : ""}
+          className={creature.status === "QUARANTINED" ? "blink-creature" : ""}
+          title={`${creature.label} — ${creature.status}`}
           style={{
             position:"absolute", pointerEvents:"none", userSelect:"none",
             left:`${pos.x}%`, top:`${pos.y}%`, transform:"translate(-50%,-50%)",
             display:"flex", flexDirection:"column", alignItems:"center", gap:2,
           }}
-          title={`${creature.label} — ${creature.status}`}
         >
           <span style={{ fontSize:14, lineHeight:1 }}>{creature.emoji}</span>
           <span style={{
-            fontSize:8, fontFamily:"monospace", fontWeight:700, padding:"0 3px",
-            borderRadius:2, color:creature.color,
-            textShadow:`0 0 6px ${creature.color}`,
+            fontSize:8, fontFamily:"monospace", fontWeight:700,
+            padding:"0 3px", borderRadius:2,
+            color:creature.color, textShadow:`0 0 6px ${creature.color}`,
           }}>{creature.id.toUpperCase()}</span>
         </div>
       );
@@ -311,39 +329,39 @@
     // ── Room Node ─────────────────────────────────────────────────────────────
 
     function RoomNode({ room, isActive, onClick }) {
-      const [hovered, setHovered] = useState(false);
+      const [hov, setHov] = useState(false);
+      const on = isActive || hov;
       const { Icon } = room;
-      const active = isActive || hovered;
 
       return (
         <button
           onClick={onClick}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
+          onMouseEnter={() => setHov(true)}
+          onMouseLeave={() => setHov(false)}
           style={{
             position:"absolute",
             left:`${room.x}%`, top:`${room.y}%`,
-            transform:`translate(-50%,-50%) scale(${hovered ? 1.12 : 1})`,
+            transform:`translate(-50%,-50%) scale(${hov ? 1.1 : 1})`,
             transition:"transform .15s ease",
             display:"flex", flexDirection:"column", alignItems:"center", gap:4,
-            background:"none", border:"none", cursor:"pointer",
+            background:"none", border:"none", cursor:"pointer", padding:4,
           }}
         >
           <div style={{
             width:44, height:44, borderRadius:8,
-            border:`2px solid ${active ? room.glow : "#334155"}`,
-            background: active ? `${room.glow}18` : "rgba(15,23,42,.9)",
+            border:`2px solid ${on ? room.glow : "#334155"}`,
+            background: on ? `${room.glow}18` : "rgba(15,23,42,.9)",
             display:"flex", alignItems:"center", justifyContent:"center",
             boxShadow: isActive ? `0 0 18px ${room.glow}60` : "none",
-            transition:"all .2s ease",
+            transition:"border-color .2s, background .2s, box-shadow .2s",
           }}>
-            <Icon size={20} color={active ? room.text : "#64748b"}
+            <Icon size={20} color={on ? room.text : "#64748b"}
               style={isActive ? { filter:`drop-shadow(0 0 4px ${room.glow})` } : {}} />
           </div>
           <span style={{
             fontSize:9, fontFamily:"monospace", fontWeight:600,
             letterSpacing:1, whiteSpace:"nowrap",
-            color: active ? room.text : "#475569",
+            color: on ? room.text : "#475569",
             transition:"color .15s",
           }}>{room.label.toUpperCase()}</span>
           {isActive && (
@@ -363,11 +381,11 @@
       if (!data) return null;
 
       return (
-        <div className="slidein" style={{
+        <div className="panel-slide" style={{
           position:"absolute", right:0, top:0, height:"100%", width:320,
-          zIndex:30, background:"rgba(2,6,23,.96)",
+          zIndex:30, background:"rgba(2,6,23,.97)",
           borderLeft:`2px solid ${data.glow}`,
-          boxShadow:`-8px 0 32px ${data.border}`,
+          boxShadow:`-8px 0 32px ${data.glow}22`,
           display:"flex", flexDirection:"column", overflow:"hidden",
         }}>
           {/* Header */}
@@ -376,18 +394,21 @@
             padding:16, borderBottom:"1px solid #1e293b", background:data.bg,
           }}>
             <div>
-              <div style={{ fontSize:13, fontWeight:700, fontFamily:"monospace",
-                letterSpacing:2, color:data.textColor }}>{data.title.toUpperCase()}</div>
-              <div style={{ fontSize:10, color:"#475569", fontFamily:"monospace",
-                marginTop:2 }}>{data.subtitle}</div>
+              <div style={{
+                fontSize:13, fontWeight:700, fontFamily:"monospace",
+                letterSpacing:2, color:data.textColor,
+              }}>{data.title.toUpperCase()}</div>
+              <div style={{
+                fontSize:10, color:"#475569", fontFamily:"monospace", marginTop:2,
+              }}>{data.subtitle}</div>
             </div>
             <button onClick={onClose} style={{
               background:"none", border:"none", cursor:"pointer",
-              color:"#475569", padding:2, lineHeight:1,
+              color:"#64748b", padding:2,
             }}><X size={16} /></button>
           </div>
 
-          {/* Stats */}
+          {/* Stats grid */}
           <div style={{
             display:"grid", gridTemplateColumns:"1fr 1fr", gap:8,
             padding:16, borderBottom:"1px solid #1e293b",
@@ -397,10 +418,14 @@
                 padding:8, borderRadius:6, background:data.bg,
                 border:"1px solid #1e293b",
               }}>
-                <div style={{ fontSize:15, fontWeight:700, fontFamily:"monospace",
-                  color:data.textColor }}>{s.value}</div>
-                <div style={{ fontSize:9, color:"#475569", fontFamily:"monospace",
-                  marginTop:2, letterSpacing:1 }}>{s.label.toUpperCase()}</div>
+                <div style={{
+                  fontSize:15, fontWeight:700, fontFamily:"monospace",
+                  color:data.textColor,
+                }}>{s.value}</div>
+                <div style={{
+                  fontSize:9, color:"#475569", fontFamily:"monospace",
+                  marginTop:2, letterSpacing:1,
+                }}>{s.label.toUpperCase()}</div>
               </div>
             ))}
           </div>
@@ -418,9 +443,9 @@
               {data.log.map((entry, i) => (
                 <div key={i} style={{
                   fontSize:10, fontFamily:"monospace", color:"#94a3b8",
-                  lineHeight:1.5, padding:"6px 8px", borderRadius:4,
+                  lineHeight:1.55, padding:"6px 8px", borderRadius:4,
                   border:"1px solid #1e293b", background:"rgba(15,23,42,.6)",
-                  animation:`fadein .3s ease ${i * .05}s both`,
+                  animation:`fadein .3s ease ${i * .06}s both`,
                 }}>{entry}</div>
               ))}
             </div>
@@ -434,12 +459,13 @@
             <span style={{ fontSize:9, color:"#334155", fontFamily:"monospace" }}>
               SAMPLE DATA · v0.1
             </span>
-            <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-              <div style={{
+            <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+              <div className="dot-pulse" style={{
                 width:6, height:6, borderRadius:"50%", background:data.glow,
-                animation:"blink 1.5s ease-in-out infinite",
               }} />
-              <span style={{ fontSize:9, fontFamily:"monospace", color:data.textColor }}>LIVE</span>
+              <span style={{ fontSize:9, fontFamily:"monospace", color:data.textColor }}>
+                LIVE
+              </span>
             </div>
           </div>
         </div>
@@ -450,9 +476,10 @@
 
     function Corridors({ activeRoom }) {
       return (
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none"
-          style={{ position:"absolute", inset:0, width:"100%", height:"100%",
-            pointerEvents:"none", zIndex:1 }}>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{
+          position:"absolute", inset:0, width:"100%", height:"100%",
+          pointerEvents:"none", zIndex:1,
+        }}>
           <defs>
             <filter id="gl" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="0.8" result="b" />
@@ -482,37 +509,38 @@
       const room = ROOMS.find(r => r.id === activeRoom);
       return (
         <div style={{
-          display:"flex", justifyContent:"space-between", alignItems:"center",
+          display:"flex", flexWrap:"wrap", gap:8,
+          justifyContent:"space-between", alignItems:"center",
           padding:"10px 20px", borderBottom:"1px solid #1e293b",
-          background:"rgba(2,6,23,.85)", position:"relative", zIndex:20,
-          flexWrap:"wrap", gap:8,
+          background:"rgba(2,6,23,.9)", position:"relative", zIndex:20,
         }}>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{
-              width:8, height:8, borderRadius:"50%", background:"#6366f1",
-              boxShadow:"0 0 8px #6366f1", animation:"blink 2s ease-in-out infinite",
+            <div className="blink-orb" style={{
+              width:8, height:8, borderRadius:"50%",
+              background:"#6366f1", boxShadow:"0 0 8px #6366f1",
             }} />
-            <span style={{ fontSize:12, fontWeight:700, fontFamily:"monospace",
-              color:"#cbd5e1", letterSpacing:4 }}>RACCOON QUANT CITADEL</span>
+            <span style={{
+              fontSize:12, fontWeight:700, fontFamily:"monospace",
+              color:"#cbd5e1", letterSpacing:4,
+            }}>RACCOON QUANT CITADEL</span>
             <span style={{ fontSize:9, fontFamily:"monospace", color:"#334155" }}>v0.1</span>
           </div>
           <div style={{
-            display:"flex", alignItems:"center", gap:16,
-            fontSize:9, fontFamily:"monospace", color:"#475569", flexWrap:"wrap",
+            display:"flex", flexWrap:"wrap", gap:14, alignItems:"center",
+            fontSize:9, fontFamily:"monospace", color:"#475569",
           }}>
-            <span style={{ display:"flex", alignItems:"center", gap:3 }}>
+            <span style={{ display:"flex", gap:3, alignItems:"center" }}>
               <TrendingUp size={9} /> DAY 47
             </span>
-            <span style={{ display:"flex", alignItems:"center", gap:3, color:"#f59e0b" }}>
+            <span style={{ display:"flex", gap:3, alignItems:"center", color:"#f59e0b" }}>
               <Zap size={9} /> LOUD_VIOLENT
             </span>
-            <span style={{ display:"flex", alignItems:"center", gap:3 }}>
+            <span style={{ display:"flex", gap:3, alignItems:"center" }}>
               <Archive size={9} /> AUDIT MODE
             </span>
             {room && (
-              <span style={{ display:"flex", alignItems:"center", gap:3, color:"#818cf8" }}>
-                <ChevronRight size={9} />
-                {room.label.toUpperCase()}
+              <span style={{ display:"flex", gap:3, alignItems:"center", color:"#818cf8" }}>
+                <ChevronRight size={9} />{room.label.toUpperCase()}
               </span>
             )}
           </div>
@@ -531,33 +559,32 @@
           borderRadius:6, padding:"5px 12px",
         }}>
           {CREATURES.map(c => (
-            <div key={c.id} style={{ display:"flex", alignItems:"center", gap:3 }}
-              title={`${c.label} — ${c.status}`}>
-              <span style={{ fontSize:11 }}>{c.emoji}</span>
+            <div key={c.id} title={`${c.label} — ${c.status}`}
+              style={{ display:"flex", alignItems:"center", gap:3 }}>
+              <span style={{ fontSize:12 }}>{c.emoji}</span>
               <div style={{
-                width:4, height:4, borderRadius:"50%",
+                width:5, height:5, borderRadius:"50%",
                 background:c.color, boxShadow:`0 0 4px ${c.color}`,
               }} />
             </div>
           ))}
-          <span style={{ fontSize:8, fontFamily:"monospace", color:"#334155",
-            marginLeft:4 }}>COUNCIL</span>
+          <span style={{
+            fontSize:8, fontFamily:"monospace", color:"#334155", marginLeft:4,
+          }}>COUNCIL</span>
         </div>
       );
     }
 
-    // ── Main ──────────────────────────────────────────────────────────────────
+    // ── Main App ──────────────────────────────────────────────────────────────
 
     function RaccoonCitadel() {
       const [activeRoom, setActiveRoom] = useState(null);
-
-      const toggle = (id) => setActiveRoom(prev => prev === id ? null : id);
+      const toggle = id => setActiveRoom(prev => prev === id ? null : id);
 
       return (
         <div style={{
-          width:"100vw", height:"100vh", display:"flex", flexDirection:"column",
-          background:"#020617", color:"#f1f5f9", fontFamily:"monospace",
-          overflow:"hidden",
+          width:"100%", height:"100%", display:"flex", flexDirection:"column",
+          background:"#020617", color:"#f1f5f9", overflow:"hidden",
         }}>
           <Header activeRoom={activeRoom} />
 
@@ -576,28 +603,21 @@
             }} />
 
             {/* Corner glyphs */}
-            <div style={{ position:"absolute", top:12, left:12, opacity:.3 }}>
-              <HexGlyph color="#6366f1" size={32} />
-            </div>
-            <div style={{ position:"absolute", top:12, right:12, opacity:.3 }}>
-              <HexGlyph color="#6366f1" size={32} />
-            </div>
-            <div style={{ position:"absolute", bottom:12, left:12, opacity:.3 }}>
-              <HexGlyph color="#6366f1" size={32} />
-            </div>
-            <div style={{ position:"absolute", bottom:12, right:12, opacity:.3 }}>
-              <HexGlyph color="#6366f1" size={32} />
-            </div>
+            {[{t:12,l:12},{t:12,r:12},{b:12,l:12},{b:12,r:12}].map((pos,i) => (
+              <div key={i} style={{ position:"absolute", opacity:.3, ...pos }}>
+                <HexGlyph color="#6366f1" size={32} />
+              </div>
+            ))}
 
             {/* Stone rings */}
             <div style={{
-              position:"absolute", inset:32, borderRadius:"50%",
-              border:"1px solid rgba(30,41,59,.4)", pointerEvents:"none",
+              position:"absolute", inset:32, borderRadius:"50%", pointerEvents:"none",
+              border:"1px solid rgba(30,41,59,.4)",
               boxShadow:"inset 0 0 60px rgba(15,23,42,.5)",
             }} />
             <div style={{
-              position:"absolute", inset:64, borderRadius:"50%",
-              border:"1px solid rgba(30,41,59,.2)", pointerEvents:"none",
+              position:"absolute", inset:64, borderRadius:"50%", pointerEvents:"none",
+              border:"1px solid rgba(30,41,59,.2)",
             }} />
 
             <Corridors activeRoom={activeRoom} />
@@ -624,7 +644,11 @@
       );
     }
 
-    createRoot(document.getElementById('root')).render(<RaccoonCitadel />);
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <React.StrictMode>
+        <RaccoonCitadel />
+      </React.StrictMode>
+    );
   </script>
 </body>
 </html>
