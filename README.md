@@ -1,9 +1,11 @@
 # Memory Engine v3.1 — The Sovereign Edition
 
 **A lightweight framework for compressing, indexing, and recalling conversational memory across sessions.**
-from memory_engine import MemoryEngine
 
-# Initialize the Sovereign v3.2 Engine
+```python
+from memory_engine_v3_1 import MemoryEngine
+
+# Initialize the Sovereign v3.1 Engine
 engine = MemoryEngine(decay_floor=0.05)
 
 # Compress and Store
@@ -13,6 +15,7 @@ engine.update_codex(scroll)
 # High-Fidelity Recall
 results = engine.recall("888 frequency")
 print(f"Retrieved: {results[0]['essence']} (TCS: {results[0]['tcs']['score']})")
+```
 
 Built to solve a real problem: AI systems lose context at token boundaries. This framework provides structured memory persistence using TF-IDF retrieval, importance-weighted compression, cross-domain synthesis, and composite quality scoring — all in pure Python + NumPy.
 
