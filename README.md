@@ -1,5 +1,7 @@
 # Memory Engine v3.1 — The Sovereign Edition
 
+> Sibling project: the planned memory layer of the **Sovereign Governor** → https://github.com/andresuarus10-byte/Sovereign-Governor
+
 **A lightweight framework for compressing, indexing, and recalling conversational memory across sessions.**
 
 ```python
