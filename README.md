@@ -19,7 +19,7 @@ results = engine.recall("888 frequency")
 print(f"Retrieved: {results[0]['essence']} (TCS: {results[0]['tcs']['score']})")
 ```
 
-Built to solve a real problem: AI systems lose context at token boundaries. This framework provides structured memory persistence using TF-IDF retrieval, importance-weighted compression, cross-domain synthesis, and composite quality scoring — all in pure Python + NumPy.
+Built to solve a real problem: AI systems lose context at token boundaries. This framework provides structured memory persistence using TF-IDF retrieval, importance-weighted compression, cross-domain synthesis, and composite quality scoring — all in pure Python, standard library only.
 
 No embeddings. No transformers. No GPU required.
 
