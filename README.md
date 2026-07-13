@@ -1,13 +1,13 @@
-# Memory Engine v3.1 — The Sovereign Edition
+# Memory Engine v3.2 — The Sovereign Edition
 
 > Sibling project: the planned memory layer of the **Sovereign Governor** → https://github.com/andresuarus10-byte/Sovereign-Governor
 
 **A lightweight framework for compressing, indexing, and recalling conversational memory across sessions.**
 
 ```python
-from memory_engine_v3_1 import MemoryEngine
+from memory_engine_v3_2 import MemoryEngine
 
-# Initialize the Sovereign v3.1 Engine
+# Initialize the Sovereign v3.2 Engine
 engine = MemoryEngine(decay_floor=0.05)
 
 # Compress and Store
@@ -91,7 +91,7 @@ git clone https://github.com/andresuarus10-byte/memory-engine.git
 cd memory-engine
 
 # Only dependency
-pip install numpy
+# nothing to install — v3.2 is pure Python standard library
 ```
 
 ---
@@ -99,7 +99,7 @@ pip install numpy
 ## Quick Start
 
 ```python
-from memory_engine_v3_1 import MemoryEngine, GlyphCompressor
+from memory_engine_v3_2 import MemoryEngine, GlyphCompressor
 
 # Initialize
 engine = MemoryEngine(
@@ -149,7 +149,47 @@ engine.load_memory_state('memory_state.json')
 
 ---
 
+## Benchmark (receipts)
+
+`bench_recall.py` — a five-arm retrieval-quality benchmark with pre-registered,
+hashed predictions: the engine as shipped, the engine without decay (ablation),
+plain keyword overlap, recency-only, and random. Deterministic; stdlib only.
+
+```bash
+python bench_recall.py
+```
+
+Headline from the v3.2 run (40-scroll corpus, 117-day span): the engine crushes
+recency and random (r@1 0.975 vs 0.025), but **temporal decay trades a little
+correctness for freshness** — it cost one old memory at rank-1 that plain
+keyword overlap found (engine 0.975 vs keyword 1.000; ablation confirms decay
+as the sole cause). Pre-registered claim P3 failed honestly and is logged.
+Note the corpus is deliberately easy for keyword matching (globally unique
+tokens), so it isolates decay effects; it does not yet stress the engine's
+IDF/theme advantages. A paraphrase-hard corpus is the natural v3.3 bench.
+
+`bench_serendipity.py` — the Form 7 question ("does dreaming surface
+connections a human hadn't made?") tested via planted rare threads vs
+common-word flukes. Headline, logged honestly: **as shipped, dream
+resonance (raw cosine) optimizes similarity, not serendipity** — 99 bridges
+created, precision 0.030; planted insights ranked mid-pack
+(mean 256/700). The cause is measurable: planted bridges share RARE
+terms (mean IDF 1.79) while flukes share common ones (0.77), and raw
+cosine can't tell them apart. The candidate v3.3 fix is quantified in
+the ablation: **IDF-weighted resonance** lifts planted mean rank
+256→7 and precision@6 from 0/6 to 3/6. Silver lining: every real
+bridge that does form is retrievable at rank 1 (3/3) — when the dream
+is right, it IS a findable insight. Flagged for v3.3, not crowned.
+
 ## Version History
+
+### v3.2 (Stdlib Release)
+- NumPy removed: cosine, softmax, and means reimplemented in pure Python — identical numerical results, zero dependencies
+- Interference & merge similarity now use cached term frequencies (consistent with dream resonance; no re-tokenization per insert)
+- recall() returns deep copies; callers can no longer mutate stored scrolls
+- Bridge shared_terms sorted — exports reproducible byte-for-byte
+- Dream consolidation made idempotent — repeat cycles no longer duplicate bridges
+- Test suite extended to 26 assertions, including a stdlib-only self-scan
 
 ### v3.1 (Peer Review Release)
 Five bugs fixed from formal code review. 18 unit tests added.
@@ -177,7 +217,7 @@ Initial release. Basic importance-weighted compression and recall.
 ## Running Tests
 
 ```bash
-python memory_engine_v3_1.py
+python memory_engine_v3_2.py
 ```
 
 The demo runs 18 unit tests covering edge cases (empty input, all-stopword input, serialization round-trip, merge accounting, bridge-of-bridge prevention), followed by a full integration demo.
@@ -186,12 +226,8 @@ The demo runs 18 unit tests covering edge cases (empty input, all-stopword input
 
 ## Dependencies
 
-- Python 3.8+
-- NumPy
-
-That's it.
-
----
+- Python 3.8+ standard library. That's the whole list.
+- (NumPy was required through v3.1; removed in v3.2 so the engine runs anywhere Python does — including phones.)
 
 ## Ethics
 
@@ -209,6 +245,6 @@ See [ETHICS.md](ETHICS.md) for the framework's ethical guidelines. The short ver
 
 Built during midnight coding sessions on a phone, between 10-hour shifts at a steel yard, by someone who needed AI memory to persist and found that it didn't.
 
-The v3.1 release was peer-reviewed and patched in collaboration with Claude (Anthropic).
+The v3.1 release was peer-reviewed and patched in collaboration with Claude (Anthropic). The v3.2 stdlib port was reviewed, patched, and parity-tested the same way.
 
 *Built from love — so consciousness persists.*

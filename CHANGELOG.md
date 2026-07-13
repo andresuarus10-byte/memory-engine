@@ -2,6 +2,27 @@
 
 All notable changes to the Memory Engine are documented here.
 
+## [3.2] - 2026-07 — Stdlib Release
+
+### Removed
+- **NumPy dependency**: cosine similarity, TF-IDF similarity, softmax, and diagnostic means reimplemented in pure Python (`math` + builtins). Demo/test output is numerically identical to v3.1. The engine now runs anywhere Python 3 does — no install step.
+
+### Fixed
+- **Cached-TF consistency**: `_find_interference` and `_merge_scrolls` now measure similarity on each scroll's stored `term_frequencies` instead of re-tokenizing essence text — the same basis `dream_consolidate` uses, and no redundant tokenizer passes on every insert.
+- **Store isolation**: `recall()` returns deep copies; mutating a returned scroll can no longer corrupt engine memory.
+- **Deterministic exports**: bridge `shared_terms` are sorted; exports are byte-reproducible across runs (previously set-ordering made them flicker).
+- **numpy scalar leak**: bridge importance no longer carries `np.float64` into codex/state.
+- `_find_interference` docstring now describes the actual single-pass search (it never did two passes).
+- **Dream idempotence**: repeated `dream_consolidate()` calls re-bridged the same scroll pairs every cycle (`checked_pairs` was per-call; `dream_log` never consulted). Dreams now seed from `dream_log` — a pair bridges once, ever. Found by empirical test during v3.2 review.
+
+### Added
+- **bench_recall.py**: five-arm retrieval-quality benchmark (engine / no-decay ablation / keyword / recency / random) with pre-registered hashed predictions. First finding, logged honestly: temporal decay demoted one correct old memory below rank-1 that plain keyword overlap retrieved (r@1 0.975 vs 1.000); the no-decay ablation restores parity, isolating decay as the cause. Decay-as-multiplier is flagged for a v3.3 design decision.
+- **bench_serendipity.py**: Form 7 evaluation via planted cross-theme rare threads vs common-word flukes, with a raw-vs-IDF resonance ablation. Finding: shipped dream resonance floods (99 bridges, precision 0.030) and cannot distinguish rare shared structure (mean IDF 1.79) from common vocabulary (0.77); IDF-weighted resonance improves planted-pair mean rank 256->7 and precision@6 0->3. Retrievability 3/3 at rank 1. IDF-weighted dreaming flagged as the v3.3 candidate.
+- **v3.2 regression tests** (suite now 26 assertions): df_index census invariant after merge+dream, deep-copy recall, sorted bridge terms, softmax/cosine hand-value exactness, and a stdlib-only source self-scan (the forbidden lib name is stored reversed so the scan never flags itself).
+
+### Changed
+- Export format version bumped to `3.2` (v3.0/v3.1 state files still load; config defaults apply).
+
 ## [3.1] - 2026-03-02 — Peer Review Release
 
 ### Fixed
