@@ -25,7 +25,7 @@ each scroll IS a distinct memory by construction.
 import copy, hashlib, math, random
 from collections import Counter
 from datetime import datetime, timedelta
-from memory_engine_v3_2 import MemoryEngine, SymbolicTokenizer
+from memory_engine_v3_3 import MemoryEngine, SymbolicTokenizer
 
 NOW = '2026-07-01T00:00:00'
 K_LIST = (1, 3, 5)
